@@ -23,36 +23,26 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="akibld.Steps.bat">
-      <Filter>Build Files</Filter>
-    </None>
-    <None Include="akibld.Tests.bat">
-      <Filter>Build Files</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="akibld.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="akibld.resources.h">
-      <Filter>Resource Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="akibld.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="akibld.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="akibld.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <Text Include="src\coreclr\dlls\CMakeLists.txt">
+      <Filter>Other Files</Filter>
+    </Text>
+    <Text Include="src\coreclr\dlls\mscoree\CMakeLists.txt">
+      <Filter>Other Files</Filter>
+    </Text>
+    <Text Include="src\coreclr\dlls\mscorpe\CMakeLists.txt">
+      <Filter>Other Files</Filter>
+    </Text>
+    <Text Include="src\coreclr\dlls\mscorrc\CMakeLists.txt">
+      <Filter>Other Files</Filter>
+    </Text>
+    <Text Include="src\coreclr\dlls\mscoree\coreclr\CMakeLists.txt">
+      <Filter>Other Files</Filter>
+    </Text>
+    <Text Include="src\coreclr\dlls\mscordbi\CMakeLists.txt">
+      <Filter>Other Files</Filter>
+    </Text>
+    <Text Include="src\coreclr\dlls\mscordac\CMakeLists.txt">
+      <Filter>Other Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

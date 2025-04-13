@@ -9,5 +9,14 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{886484C7-9C4B-43CC-9735-3D5C501D609F}</ProjectGuid>
   </PropertyGroup>
+  <ItemGroup>
+    <Text Include="src\coreclr\dlls\CMakeLists.txt" />
+    <Text Include="src\coreclr\dlls\mscordac\CMakeLists.txt" />
+    <Text Include="src\coreclr\dlls\mscordbi\CMakeLists.txt" />
+    <Text Include="src\coreclr\dlls\mscoree\CMakeLists.txt" />
+    <Text Include="src\coreclr\dlls\mscoree\coreclr\CMakeLists.txt" />
+    <Text Include="src\coreclr\dlls\mscorpe\CMakeLists.txt" />
+    <Text Include="src\coreclr\dlls\mscorrc\CMakeLists.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
