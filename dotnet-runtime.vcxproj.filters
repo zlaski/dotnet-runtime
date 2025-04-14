@@ -38,11 +38,13 @@
     <Text Include="src\coreclr\dlls\mscoree\coreclr\CMakeLists.txt">
       <Filter>Other Files</Filter>
     </Text>
-    <Text Include="src\coreclr\dlls\mscordbi\CMakeLists.txt">
-      <Filter>Other Files</Filter>
-    </Text>
-    <Text Include="src\coreclr\dlls\mscordac\CMakeLists.txt">
-      <Filter>Other Files</Filter>
-    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\coreclr\dlls\mscoree\mscoree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\coreclr\dlls\mscoree\exports.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

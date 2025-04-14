@@ -11,12 +11,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Text Include="src\coreclr\dlls\CMakeLists.txt" />
-    <Text Include="src\coreclr\dlls\mscordac\CMakeLists.txt" />
-    <Text Include="src\coreclr\dlls\mscordbi\CMakeLists.txt" />
     <Text Include="src\coreclr\dlls\mscoree\CMakeLists.txt" />
     <Text Include="src\coreclr\dlls\mscoree\coreclr\CMakeLists.txt" />
     <Text Include="src\coreclr\dlls\mscorpe\CMakeLists.txt" />
     <Text Include="src\coreclr\dlls\mscorrc\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\coreclr\dlls\mscoree\exports.cpp" />
+    <ClCompile Include="src\coreclr\dlls\mscoree\mscoree.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

@@ -1,3 +1,6 @@
+project(mscoree)
+add_definitions(-DFEATURE_CORECLR)
+
 include_directories("../../inc")
 
 if(FEATURE_GDBJIT)
@@ -5,6 +8,7 @@ if(FEATURE_GDBJIT)
 endif(FEATURE_GDBJIT)
 
 set(CLR_SOURCES
+    dbgshim.cpp
     mscoree.cpp
     exports.cpp
 )
@@ -100,171 +104,8 @@ add_library_clr(mscoree
     ${CLR_SOURCES}
 )
 
-add_custom_target(coreclr_exports DEPENDS ${EXPORTS_FILE})
-add_custom_target(coreclr_def DEPENDS ${DEF_FILE})
-
-add_dependencies(mscoree coreclr_def)
-add_dependencies(mscoree coreclr_exports)
-
-set_property(TARGET mscoree APPEND_STRING PROPERTY LINK_FLAGS ${EXPORTS_LINKER_OPTION})
-set_property(TARGET mscoree APPEND_STRING PROPERTY LINK_DEPENDS ${EXPORTS_FILE})
-
-if (CLR_CMAKE_HOST_UNIX)
-    set(LIB_UNWINDER unwinder_wks)
-endif (CLR_CMAKE_HOST_UNIX)
-
-# IMPORTANT! Please do not rearrange the order of the libraries. The linker on Linux is
-# order dependent and changing the order can result in undefined symbols in the shared
-# library.
-set(CORECLR_LIBRARIES
-    utilcode
-    ${START_LIBRARY_GROUP} # Start group of libraries that have circular references
-    cordbee_wks
-    debug-pal
-    ${LIB_UNWINDER}
-    v3binder
-    ${END_LIBRARY_GROUP} # End group of libraries that have circular references
-    mdcompiler_wks
-    mdruntime_wks
-    mdruntimerw_wks
-    bcltype
-    ceefgen
-    comfloat_wks
-    corguids
-    gcinfo
-    utilcode
-    v3binder
-    System.Globalization.Native-Static
-    interop
-    coreclrminipal
-    gc_pal
-    cdac_contract_descriptor
-)
-
-if(CLR_CMAKE_TARGET_ARCH_AMD64)
-    list(APPEND CORECLR_LIBRARIES
-        gc_vxsort
-    )
-endif(CLR_CMAKE_TARGET_ARCH_AMD64)
-
-if(CLR_CMAKE_TARGET_WIN32)
-    list(APPEND CORECLR_LIBRARIES
-        ${STATIC_MT_CRT_LIB}
-        ${STATIC_MT_VCRT_LIB}
-        kernel32.lib
-        advapi32.lib
-        ole32.lib
-        oleaut32.lib
-        uuid.lib
-        user32.lib
-        version.lib
-        shlwapi.lib
-        bcrypt.lib
-        RuntimeObject.lib
-        delayimp.lib
-    )
-else()
-    list(APPEND CORECLR_LIBRARIES
-        ${START_WHOLE_ARCHIVE} # force all PAL objects to be included so all exports are available
-        coreclrpal
-        ${END_WHOLE_ARCHIVE}
-        mscorrc
-    )
-endif(CLR_CMAKE_TARGET_WIN32)
-
-if(CLR_CMAKE_TARGET_LINUX)
-    list(APPEND CORECLR_LIBRARIES
-        ${START_WHOLE_ARCHIVE}
-        tracepointprovider
-        ${END_WHOLE_ARCHIVE}
-    )
-elseif(CLR_CMAKE_TARGET_SUNOS)
-    list(APPEND CORECLR_LIBRARIES
-        socket
-    )
-elseif(CLR_CMAKE_TARGET_HAIKU)
-    list(APPEND CORECLR_LIBRARIES
-        network
-    )
-endif(CLR_CMAKE_TARGET_LINUX)
-
-if(FEATURE_PERFTRACING)
-    list(APPEND CORECLR_LIBRARIES
-        eventpipe
-    )
-endif(FEATURE_PERFTRACING)
-
-if(FEATURE_EVENT_TRACE)
-    if(CLR_CMAKE_HOST_UNIX)
-        list(APPEND CORECLR_LIBRARIES
-            eventprovider # On Windows this library contains only macros
-        )
-    endif(CLR_CMAKE_HOST_UNIX)
-endif(FEATURE_EVENT_TRACE)
-
-if(FEATURE_PERFTRACING)
-    if(CLR_CMAKE_TARGET_LINUX)
-        list(APPEND CORECLR_LIBRARIES
-            usereventsprovider
-        )
-    endif(CLR_CMAKE_TARGET_LINUX)
-endif(FEATURE_PERFTRACING)
-
-if(FEATURE_MERGE_JIT_AND_ENGINE)
-    set(CLRJIT_STATIC clrjit_static)
-endif(FEATURE_MERGE_JIT_AND_ENGINE)
-
-if (CLR_CMAKE_TARGET_OSX)
-    find_library(FOUNDATION Foundation REQUIRED)
-endif()
-
-target_sources(mscoree PUBLIC $<TARGET_OBJECTS:cee_wks_core>)
-target_link_libraries(mscoree PUBLIC ${CORECLR_LIBRARIES} ${CLRJIT_STATIC} cee_wks ${FOUNDATION})
-target_sources(coreclr_static PUBLIC $<TARGET_OBJECTS:cee_wks_core>)
-target_link_libraries(coreclr_static PUBLIC ${CORECLR_LIBRARIES} clrjit_static cee_wks_mergeable ${FOUNDATION})
-target_compile_definitions(coreclr_static PUBLIC CORECLR_EMBEDDED)
-
-if (CLR_CMAKE_HOST_ANDROID)
-    target_link_libraries(mscoree PUBLIC log)
-    target_link_libraries(coreclr_static PUBLIC log)
-endif()
-
-if(CLR_CMAKE_TARGET_WIN32)
-    set(CLRDEBUGINFO_RESOURCE_PATH ${CMAKE_CURRENT_BINARY_DIR}/clr_debug_resource.bin)
-
-    if(CLR_CMAKE_TARGET_ARCH_AMD64)
-        set(CLRDEBUGINFO_RESOURCE_NAME CLRDEBUGINFOWINDOWSAMD64)
-    elseif(CLR_CMAKE_TARGET_ARCH_I386)
-        set(CLRDEBUGINFO_RESOURCE_NAME CLRDEBUGINFOWINDOWSX86)
-    elseif(CLR_CMAKE_TARGET_ARCH_ARM64)
-        set(CLRDEBUGINFO_RESOURCE_NAME CLRDEBUGINFOWINDOWSARM64)
-    endif(CLR_CMAKE_TARGET_ARCH_AMD64)
-
-    add_custom_target(
-        clr_debug_resources
-        DEPENDS mscordaccore mscordbi
-        # make CLRDEBUGINFO resource
-        COMMAND powershell -NoProfile -ExecutionPolicy ByPass -File "${CMAKE_CURRENT_SOURCE_DIR}/GenClrDebugResource.ps1" -dac $<TARGET_FILE:mscordaccore> -dbi $<TARGET_FILE:mscordbi> -out ${CLRDEBUGINFO_RESOURCE_PATH}
-    )
-
-    configure_file(dump_helper_resource.rc.in ${CMAKE_CURRENT_BINARY_DIR}/dump_helper_resource.rc)
-
-    set(EMBEDDED_MINIDUMP_AUXILIARY_PROVIDER $<TARGET_FILE:mscordaccore>)
-    configure_file(dump_helper_resource.rc.in ${CMAKE_CURRENT_BINARY_DIR}/dump_helper_resource_embedded_minidump_provider.rc.gen)
-    file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/dump_helper_resource_embedded_minidump_provider.rc INPUT ${CMAKE_CURRENT_BINARY_DIR}/dump_helper_resource_embedded_minidump_provider.rc.gen)
-
-    target_sources(mscoree PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/dump_helper_resource.rc)
-    target_sources(coreclr_static PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/dump_helper_resource_embedded_minidump_provider.rc)
-
-    add_dependencies(mscoree clr_debug_resources)
-    add_dependencies(coreclr_static clr_debug_resources mscordaccore)
-endif(CLR_CMAKE_TARGET_WIN32)
-
 # add the install targets
 install_clr(TARGETS mscoree DESTINATIONS . sharedFramework COMPONENT runtime)
 if(CLR_CMAKE_HOST_MACCATALYST OR CLR_CMAKE_HOST_IOS)
-    install_clr(TARGETS coreclr_static DESTINATIONS . sharedFramework COMPONENT runtime)
+    install_clr(TARGETS mscoree_static DESTINATIONS . sharedFramework COMPONENT runtime)
 endif()
-
-# Enable profile guided optimization
-add_pgo(mscoree)
