@@ -9,8 +9,9 @@ endif(FEATURE_GDBJIT)
 
 set(CLR_SOURCES
     dbgshim.cpp
-    mscoree.cpp
+    debugger.cpp
     exports.cpp
+    mscoree.cpp
 )
 
 if(CLR_CMAKE_TARGET_WIN32)
